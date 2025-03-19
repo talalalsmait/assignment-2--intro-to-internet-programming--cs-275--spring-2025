@@ -16,15 +16,16 @@ document.addEventListener(`DOMContentLoaded`, () => {
     const nextButton = document.querySelector(`.carousel-navigation a:last-child`);
     const slidesContainer = document.querySelector(`.carousel-slides`);
 
-
-    let currentIndex = 0;
     let albums = [];
+    let index = 0;
+    let totalItems = 0;
 
 
     const loadAlbums = async () => {
         try {
             const res = await fetch(`/json/data.json`);
             albums = await res.json();
+            totalItems = albums.length;
             displaySlides();
         } catch (error) {
             console.error(`Error`);
@@ -32,46 +33,50 @@ document.addEventListener(`DOMContentLoaded`, () => {
     };
 
 
-
     const displaySlides = () => {
-        slidesContainer.innerHTML = albums.map((album, index) => `
-            <div class="slide ${index === 0 ? `active` : ``}">
-                <a href="${album.url}" target="_blank">
-                    <img src="${album.cover_image.path}" alt="${album.cover_image.alt_content}" width="640">
-                </a>
-                <h3>${album.album}</h3>
-                <p>${album.artist}</p>
-                <section>
-                    <p>${album.review.content}</p>
-                    <p>Credit: ${album.cover_image.credit}</p>
-                    <p>— ${album.review.source}</p>
-                </section>
-            </div>
-        `).join(``);
-        console.log(`hello`);
+        slidesContainer.innerHTML = `
+            <div class="carousel-items-container">
+                ${albums.map((album) => `
+                    <div class="slide-item">
+                        <a href="${album.url}" target="_blank">
+                            <img src="${album.cover_image.path}" alt="${album.cover_image.alt_content}" width="640">
+                        </a>
+                        <h3>${album.album}</h3>
+                        <p>${album.artist}</p>
+                        <section>
+                            <p>${album.review.content}</p>
+                            <p>Credit: ${album.cover_image.credit}</p>
+                            <p>— ${album.review.source}</p>
+                        </section>
+                    </div>
+                `).join(``)}
+            </div>`;
     };
 
     const nextSlide = () => {
-
-        if(currentIndex < albums.length - 1){
-            currentIndex = (currentIndex + 1) ;
-            updateCarousel();
+        if (index < totalItems - 1) {
+            index++;
+        } else {
+            index = 0;
         }
-
+        updateCarousel();
     };
 
 
     const prevSlide = () => {
-        if(currentIndex > 0){
-            currentIndex = (currentIndex - 1) ;
-            updateCarousel();
+        if (index > 0) {
+            index--;
+        } else {
+            index = totalItems - 1;
         }
+        updateCarousel();
     };
 
 
     const updateCarousel = () => {
-        document.querySelectorAll(`.slide`).forEach((slide, index) => {
-            slide.classList.toggle(`active`, index === currentIndex);
+        document.querySelectorAll(`.slide-item`).forEach((slide, slideIndex) => {
+            let offset = (slideIndex - index) * 100 - (slideIndex * 100);
+            slide.style.transform = `translateX(${offset}%)`;
         });
     };
 
